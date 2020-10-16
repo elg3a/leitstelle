@@ -1,0 +1,14 @@
+{
+    "hostname": "",
+    "sslcheck": "",
+    "cred":
+    {
+        "domain": "smtp.",
+        "port": 587,
+        "password": "",
+        "username": "",
+        "from": "",
+        "to": ""
+    }
+}
+
