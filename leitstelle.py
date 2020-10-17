@@ -284,8 +284,8 @@ if __name__ == "__main__":
     sp_login.add_argument("ip", help="IP of ssh login.")
     sp_boot = sp.add_parser('boot', help='Run with this option on boot to inform about reboots.')
     sp_boot.set_defaults(which='boot')
-    sp_weekly = sp.add_parser('weekly', help='Run stuff that is intended to be run weekly (e.g. from CRON).')
-    sp_weekly.set_defaults(which='weekly')
+    sp_periodic = sp.add_parser('periodic', help='Run stuff that is intended to be run periodic (e.g. from CRON).')
+    sp_periodic.set_defaults(which='periodic')
     args = parser.parse_args()
     if len(sys.argv) == 1:
         parser.print_help(sys.stderr)
@@ -302,11 +302,11 @@ if __name__ == "__main__":
 
 
         # run_module(check_updates)
-    if args.which == "weekly":
-        logger.info("Running weekly checks")
+    if args.which == "periodic":
+        logger.info("Running periodic checks")
 
         msg_text = """\
-This is your weekly reminder to:
+This is your reminder to:
   - check logs: *sshd*, *tor* and *leitstelle*
   - check borg list if pruinng worked
   - *update* and *reboot*
