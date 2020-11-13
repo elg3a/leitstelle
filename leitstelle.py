@@ -25,7 +25,7 @@ from email.mime.multipart import MIMEMultipart
 
 
 def get_bash(bash_command):
-    """ Return stdout of given bash command. """
+    """Return stdout of given bash command."""
     result = subprocess.run(['bash', '-c', bash_command],
                             stdout=subprocess.PIPE,
                             text=True)
@@ -61,8 +61,8 @@ def send(msg, subject):
 
 def login_log_since_last():
     """
-    ssh logins since last return.
-    returns log since last run as string
+    SSH logins since last call.
+    :returns: log since last run as string
     """
     current_time = datetime.now()
     timefmt = "%Y-%m-%d %H:%M:%S"
@@ -90,7 +90,7 @@ def check_ssl(domain, port='443'):
     """
     :param domain: some site without http/https in the path
     """
-    # Allert if not_after is more less 2 Weeks away
+    # Alert if not_after is more less 2 Weeks away
     # catch url not reachable for separate notification
     context = ssl.create_default_context()
     with socket.create_connection((domain, port)) as sock:
@@ -118,7 +118,7 @@ def check_updates():
 def run_module(module, **args):
     """
     Run a given function with given arguments and log failures.
-    must return same as module or none
+    Must return same as module or none
     """
     try:
         return module(**args)
@@ -128,8 +128,11 @@ def run_module(module, **args):
         return None
 
 
-def sshd_log_analysis(msg):
-    """ :param msg: a MIMEMultipart() to which the image will me attached """
+def sshd_log_analysis():
+    """
+    Plot a histogram of ssh logins
+    :returns: attachment as MIMEBase
+    """
 
     import re
     import io
@@ -206,8 +209,7 @@ def sshd_log_analysis(msg):
     encode_base64(part)
     part.add_header('Content-Disposition',
                     'attachment; filename="{}"'.format('plot.png'))
-    msg.attach(part)
-    return msg
+    return part
 
 
 if __name__ == "__main__":
@@ -229,13 +231,13 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Leitstelle')
     sp = parser.add_subparsers()
-    sp_login = sp.add_parser('login', help='Run this from sshrc with arguments user and ip to inform about logins.')
+    sp_login = sp.add_parser('login', help='Run this from sshrc with arguments user and IP to inform about logins.')
     sp_login.set_defaults(which='login')
     sp_login.add_argument("user", help="User that logged in.")
     sp_login.add_argument("ip", help="IP of ssh login.")
     sp_boot = sp.add_parser('boot', help='Run with this option on boot to inform about reboots.')
     sp_boot.set_defaults(which='boot')
-    sp_periodic = sp.add_parser('periodic', help='Run stuff that is intended to be run periodic (e.g. from CRON).')
+    sp_periodic = sp.add_parser('periodic', help='Run stuff that is intended to be run periodically (e.g. from CRON).')
     sp_periodic.set_defaults(which='periodic')
     args = parser.parse_args()
     if len(sys.argv) == 1:
@@ -257,7 +259,7 @@ if __name__ == "__main__":
         msg_text = """\
 This is your reminder to:
   - check logs: *sshd*, *tor* and *leitstelle*
-  - check borg list if pruinng worked
+  - check borg list if pruing worked
   - *update* and *reboot*
 
 journalctl -u sshd -n 100
@@ -276,9 +278,9 @@ vim $HOME/leitstelle.log
         msg.attach(MIMEText(msg_text, 'plain'))
 
         # attach hist of logins
-        img_msg = run_module(sshd_log_analysis, msg=msg)
-        if img_msg:
-            msg = img_msg
+        part = run_module(sshd_log_analysis)
+        if part:
+            msg.attach(part)
         else:
             logger.error("attaching image failed")
 
