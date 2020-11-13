@@ -22,8 +22,6 @@ from urllib.request import socket
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-# from email.Utils import formatdate
-# msg["Date"] = formatdate(localtime=True)
 
 
 def get_bash(bash_command):
@@ -32,9 +30,6 @@ def get_bash(bash_command):
                             stdout=subprocess.PIPE,
                             text=True)
     return result.stdout.strip("\n")
-#   return str(subprocess.check_output(['bash','-c', bash_command]))[2:-3]
-#   except subprocess.CalledProcessError:
-#   logger.error("failed getting: "+bash_command)
 
 
 def send(msg, subject):
@@ -62,36 +57,6 @@ def send(msg, subject):
         logger.error('SMTP error occurred: ' + repr(e))
     except Exception as e:
         logger.error("in send: " + repr(e))
-
-
-def _old_login_log_since_last():
-    """
-    ssh logins since last return.
-    returns log since last run as string
-    """
-    current_time = datetime.now()
-    timefmt = "%Y-%m-%d %H:%M:%S"
-    if os.path.exists(config["cachefile"]):
-        with open(config["cachefile"]) as handle:
-            cache = json.load(handle)
-        last_log_send = datetime.strptime(cache["last_log_send"], timefmt)
-        if (current_time-last_log_send) > timedelta(hours=1):
-            cache["last_log_send"] = current_time.strftime(timefmt)
-            with open(config["cachefile"], "w") as handle:
-                json.dump(cache, handle)
-
-            log = get_bash(f"journalctl -u sshd --since '{last_log_send}'")
-            attach = "\n\n"+log
-            logger.info("Attached login log since last send")
-        else:
-            attach = ""
-    else:  # create cache
-        cache = dict()
-        cache["last_log_send"] = current_time.strftime(timefmt)
-        with open(config["cachefile"], "w") as handle:
-            json.dump(cache, handle)
-        attach = ""
-    return attach
 
 
 def login_log_since_last():
@@ -170,21 +135,9 @@ def sshd_log_analysis(msg):
     import io
     from email.encoders import encode_base64
     from email.mime.base import MIMEBase
-#    try:
     import numpy as np
     import matplotlib.pyplot as plt
     import matplotlib.dates as mdates
-#    except ModuleNotFoundError:
-#        return None
-
-    # old parsing
-    # lines = get_bash(f"journalctl -u sshd --since '{last_log_send}'")
-    # lineformat = re.compile(
-    #     r"""(?P<dt>[a-z]{3} \d{2} \d{2}:\d{2}:\d{2}) """
-    #     r"""(?P<host>[^\s]+) """
-    #     r"""(?P<service>sshd\[\d+\]\:) """
-    #     r"""(?P<other>.+)"""
-    #     , re.IGNORECASE)
 
     otherformats = [re.compile(x, re.IGNORECASE) for x in [
         r"Accepted publickey for (?P<user>[^\s]+) from (?P<ipaddress>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}) port (?P<port>\d{1,5})",
@@ -315,7 +268,7 @@ vim $HOME/leitstelle.log
         x = run_module(check_ssl, domain=config["sslcheck"])
         if x:
             logger.info(x)
-            msg_text += "\n\n"+x
+            msg_text += "\n\n" + x
         else:
             msg_text += "\n\nssl-check failed"
 
