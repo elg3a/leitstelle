@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 
+# TODO
 """
 needs config.json (root owned)
 creates leitstelle.log and cache.json
 """
-
 
 import os
 import sys
@@ -22,8 +22,8 @@ from urllib.request import socket
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-#from email.Utils import formatdate
-#msg["Date"] = formatdate(localtime=True)
+# from email.Utils import formatdate
+# msg["Date"] = formatdate(localtime=True)
 
 
 def get_bash(bash_command):
@@ -54,8 +54,8 @@ def send(msg, subject):
 
     try:
         context = ssl.create_default_context()
-        with smtplib.SMTP(cred["domain"], cred["port"]) as server:
-            server.starttls(context=context)
+        with smtplib.SMTP_SSL(cred["domain"], cred["port"],
+                              context=context) as server:
             server.login(cred["username"], cred["password"])
             server.sendmail(cred["from"], cred["to"], msg.as_string())
     except smtplib.SMTPException as e:
@@ -85,14 +85,13 @@ def _old_login_log_since_last():
             logger.info("Attached login log since last send")
         else:
             attach = ""
-    else: # create cache
+    else:  # create cache
         cache = dict()
         cache["last_log_send"] = current_time.strftime(timefmt)
         with open(config["cachefile"], "w") as handle:
             json.dump(cache, handle)
         attach = ""
     return attach
-
 
 
 def login_log_since_last():
@@ -111,9 +110,9 @@ def login_log_since_last():
             json.dump(cache, handle)
 
         log = get_bash(f"journalctl -u sshd --since '{last_log_send}'")
-        attach = "\n\n"+log
+        attach = "\n\n" + log
         logger.debug("Attached login log since last send")
-    else: # create cache
+    else:  # create cache
         cache = dict()
         cache["last_log_send"] = current_time.strftime(timefmt)
         with open(config["cachefile"], "w") as handle:
@@ -131,7 +130,7 @@ def check_ssl(domain, port='443'):
     context = ssl.create_default_context()
     with socket.create_connection((domain, port)) as sock:
         with context.wrap_socket(sock, server_hostname=domain) as ssock:
-            #print(ssock.version())
+            # print(ssock.version())
             date = ssock.getpeercert()
 
     date = date["notAfter"][:-4]
@@ -147,7 +146,7 @@ def check_updates():
     """ return number of available updates. """
     bash_command = ["checkupdates"]
     result = get_bash(bash_command)
-    n = len(result.split("\n"))-1
+    n = len(result.split("\n")) - 1
     return f"{n} updates available"
 
 
@@ -179,21 +178,21 @@ def sshd_log_analysis(msg):
 #        return None
 
     # old parsing
-    #lines = get_bash(f"journalctl -u sshd --since '{last_log_send}'")
-    #lineformat = re.compile(
-    #    r"""(?P<dt>[a-z]{3} \d{2} \d{2}:\d{2}:\d{2}) """
-    #    r"""(?P<host>[^\s]+) """
-    #    r"""(?P<service>sshd\[\d+\]\:) """
-    #    r"""(?P<other>.+)"""
-    #    , re.IGNORECASE)
+    # lines = get_bash(f"journalctl -u sshd --since '{last_log_send}'")
+    # lineformat = re.compile(
+    #     r"""(?P<dt>[a-z]{3} \d{2} \d{2}:\d{2}:\d{2}) """
+    #     r"""(?P<host>[^\s]+) """
+    #     r"""(?P<service>sshd\[\d+\]\:) """
+    #     r"""(?P<other>.+)"""
+    #     , re.IGNORECASE)
 
     otherformats = [re.compile(x, re.IGNORECASE) for x in [
         r"Accepted publickey for (?P<user>[^\s]+) from (?P<ipaddress>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}) port (?P<port>\d{1,5})",
         r"Failed password for (?P<user>[^\s]+) from (?P<ipaddress>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}) port (?P<port>\d{1,5})",
         r"User (?P<user>[^\s]+) from (?P<ipaddress>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}) not allowed because not listed in AllowUsers"]]
 
-    #with open("log.log") as h:
-    #    lines = h.readlines()
+    # with open("log.log") as h:
+    #     lines = h.readlines()
     lines = get_bash("journalctl -u sshd -o json").split("\n")
 
     mydata = {}
@@ -222,10 +221,10 @@ def sshd_log_analysis(msg):
         all_dts.append([])
         for _, items in mydata.items():
             all_dts[i].append(np.array(items[stat]["dt"]))
-    a_all_dts = np.concatenate(all_dts[0]+all_dts[1])
-    binwidth = 24 #hours
+    a_all_dts = np.concatenate(all_dts[0] + all_dts[1])
+    binwidth = 24  # hours
     bins = np.arange(a_all_dts.min(),
-                     a_all_dts.max()+timedelta(hours=binwidth),
+                     a_all_dts.max() + timedelta(hours=binwidth),
                      timedelta(hours=binwidth))
 
     fig, ax = plt.subplots(2, 1, sharex=True)
@@ -243,7 +242,7 @@ def sshd_log_analysis(msg):
     ax[1].set_ylabel("fail")
     fig.tight_layout()
     plt.subplots_adjust(hspace=0)
-    #plt.savefig("hist.png")
+    # plt.savefig("hist.png")
 
     buf = io.BytesIO()
     plt.savefig(buf, format='png')
@@ -262,7 +261,7 @@ if __name__ == "__main__":
 
     config = {
         "basedir": f"{os.path.dirname(os.path.realpath(__file__))}",
-        "hostname": get_bash('echo "$(hostname -s)"'), # can be overwritten with config
+        "hostname": get_bash('echo "$(hostname -s)"'),  # can be overwritten with config
         "myname": "leitstelle",
     }
     config["logfile"] = f"{config['basedir']}/{config['myname']}.log"
@@ -274,7 +273,6 @@ if __name__ == "__main__":
         extconfig = json.load(handle)
     config = {**config, **extconfig}
     cred = config["cred"]
-
 
     parser = argparse.ArgumentParser(description='Leitstelle')
     sp = parser.add_subparsers()
@@ -291,7 +289,6 @@ if __name__ == "__main__":
         parser.print_help(sys.stderr)
         sys.exit(1)
 
-
     logging.basicConfig(
         filename=config["logfile"],
         level=logging.INFO,
@@ -300,8 +297,7 @@ if __name__ == "__main__":
     )
     logger = logging.getLogger(__file__)
 
-
-        # run_module(check_updates)
+    # run_module(check_updates)
     if args.which == "periodic":
         logger.info("Running periodic checks")
 
@@ -323,7 +319,7 @@ vim $HOME/leitstelle.log
         else:
             msg_text += "\n\nssl-check failed"
 
-        msg = MIMEMultipart() #TODO need multipart type here for plain text only?
+        msg = MIMEMultipart()  # TODO need multipart here for plain text only?
         msg.attach(MIMEText(msg_text, 'plain'))
 
         # attach hist of logins
@@ -335,19 +331,17 @@ vim $HOME/leitstelle.log
 
         send(msg, "Alive")
 
-
     elif args.which == "boot":
         msg = MIMEText(f"{config['hostname']} just rebooted")
         logger.info(f"{config['hostname']} just rebooted")
         send(msg, "Reboot")
 
-
     elif args.which == "login":
         # Send a notification message on every run and attach
         # log of logins at maximum one hour intervals
 
-        #loginbyip = get_bash("echo $SSH_CONNECTION | cut -d ' ' -f 1")
-        #loginbyuser = get_bash("echo $USER")
+        # loginbyip = get_bash("echo $SSH_CONNECTION | cut -d ' ' -f 1")
+        # loginbyuser = get_bash("echo $USER")
         loginbyuser = args.user
         loginbyip = args.ip
         attach = login_log_since_last()
