@@ -292,11 +292,6 @@ vim $HOME/leitstelle.log
         send(msg, "Reboot")
 
     elif args.which == "login":
-        # Send a notification message on every run and attach
-        # log of logins at maximum one hour intervals
-
-        # loginbyip = get_bash("echo $SSH_CONNECTION | cut -d ' ' -f 1")
-        # loginbyuser = get_bash("echo $USER")
         loginbyuser = args.user
         loginbyip = args.ip
         attach = login_log_since_last()
