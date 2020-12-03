@@ -216,7 +216,7 @@ if __name__ == "__main__":
 
     config = {
         "basedir": f"{os.path.dirname(os.path.realpath(__file__))}",
-        "hostname": get_bash('echo "$(hostname -s)"'),  # can be overwritten with config
+        "hostname": get_bash('echo "$HOSTNAME"'),  # can be overwritten with config
         "myname": "leitstelle",
     }
     config["logfile"] = f"{config['basedir']}/{config['myname']}.log"
