@@ -4,7 +4,7 @@
     "cred":
     {
         "domain": "smtp.",
-        "port": 587,
+        "port": 465,
         "password": "",
         "username": "",
         "from": "",
