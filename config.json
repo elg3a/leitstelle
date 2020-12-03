@@ -9,6 +9,10 @@
         "username": "",
         "from": "",
         "to": ""
-    }
+    },
+    "periodic-message": [
+        "test line 1",
+        "    test line 2"
+    ]
 }
 

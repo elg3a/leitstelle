@@ -256,23 +256,12 @@ if __name__ == "__main__":
     if args.which == "periodic":
         logger.info("Running periodic checks")
 
-        msg_text = """\
-This is your reminder to:
-  - check logs: *sshd*, *tor* and *leitstelle*
-  - check borg list if pruing worked
-  - *update* and *reboot*
-
-journalctl -u sshd -n 100
-journalctl -u tor -n 100
-vim $HOME/leitstelle.log
-"""
+        msg_text = "\n".join(config["periodic-message"])
 
         x = run_module(check_ssl, domain=config["sslcheck"])
         if x:
             logger.info(x)
             msg_text += "\n\n" + x
-        else:
-            msg_text += "\n\nssl-check failed"
 
         msg = MIMEMultipart()  # TODO need multipart here for plain text only?
         msg.attach(MIMEText(msg_text, 'plain'))
