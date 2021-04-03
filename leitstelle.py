@@ -32,6 +32,11 @@ def get_bash(bash_command):
     return result.stdout.strip("\n")
 
 
+    # result = subprocess.run(['bash', '-c', bash_command], check=True,
+    #                         capture_output=True, text=True)
+    # return result.stdout.strip("\n")
+
+
 def send(msg, subject):
     """
     Extend Message Object with sender information and date and sent.
@@ -185,7 +190,7 @@ def sshd_log_analysis():
 
     fig, ax = plt.subplots(2, 1, sharex=True)
     for i, stat in enumerate(["acc", "rej"]):
-        ax[i].hist(all_dts[i], bins, histtype='bar', label=users,
+        ax[i].hist(all_dts[i], bins, histtype='bar', label=list(users),
                    color=colors[:len(users)])
     _ = [ax[i].set_ylim(None, max([ax[i].get_ylim()[1] for i in range(2)]))
          for i in range(2)]
