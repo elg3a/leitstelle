@@ -6,6 +6,7 @@ Notifications and logging for server administration tasks.
 - auto install via option
 - unit and integration tests with mock data
 - code formating and static code analysis
+- monitore systemd-logind instead of sshd?
 
 
 ## Installation
@@ -21,6 +22,7 @@ Ensure to make the script root owned and executable:
 ```sh
 $ chown root:root leitstelle.py
 $ chmod +x leitstelle.py
+$ chmod 600 config.json
 ```
 
 In `/etc/ssh/sshrc` with arguments user and ssh connection ip:
@@ -30,20 +32,22 @@ ip=$(echo $SSH_CONNECTION | cut -d ' ' -f 1)
 sudo /path/to/leitstelle.py login $user $ip
 ```
 
-Periodic systemd (or cron: in sudo crontab -e do @reboot yourScriptPath):
+Periodic systemd (or with cron: in `sudo crontab -e` do `@reboot yourScriptPath`):
+
 `/etc/systemd/system/leitstelle-periodic.timer`
 ```
 [Unit]
 Description=Run leitstelle periodically
 
 [Timer]
-OnCalendar=Sat 12:00
+OnCalendar=Sat *-*-1..7 12:00:00
 Persistent=true
 
 [Install]
 WantedBy=timers.target
 ```
-AND
+and
+
 `/etc/systemd/system/leitstelle-periodic.service`
 ```
 [Unit]
@@ -65,6 +69,7 @@ $ systemctl list-timers
 ```
 
 Systemd service on boot:
+
 `/etc/systemd/system/leitstelle.service`
 ```
 [Unit]
