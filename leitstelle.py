@@ -29,12 +29,8 @@ def get_bash(bash_command):
     result = subprocess.run(['bash', '-c', bash_command],
                             stdout=subprocess.PIPE,
                             text=True)
+    # check=True, capture_output=True
     return result.stdout.strip("\n")
-
-
-    # result = subprocess.run(['bash', '-c', bash_command], check=True,
-    #                         capture_output=True, text=True)
-    # return result.stdout.strip("\n")
 
 
 def send(msg, subject):
@@ -154,6 +150,7 @@ def sshd_log_analysis():
 
     # with open("log.log") as h:
     #     lines = h.readlines()
+    # TODO only last months
     lines = get_bash("journalctl -u sshd -o json").split("\n")
 
     mydata = {}

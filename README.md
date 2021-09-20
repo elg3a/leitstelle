@@ -2,13 +2,6 @@
 Notifications and logging for server administration tasks.
 
 
-## ToDo
-- auto install via option
-- unit and integration tests with mock data
-- code formating and static code analysis
-- monitore systemd-logind instead of sshd?
-
-
 ## Installation
 To be run as root to ensure that everything is accessible while at the same
 time not allowing access to data (e.g credentials, log) to anyone else.
@@ -105,7 +98,13 @@ Configuration file: Fill in template of `config.json`
     - to notify about reboots
 
 
-## EXTENSION
+## ToDo
+- auto install via option
+- unit and integration tests with mock data
+- code formating and static code analysis
+- monitore systemd-logind instead of sshd?
+
+### Future Extension
 - test sshd security (also check for updates of the script)
 - automatic nmap port scans
 - nginx connection summary
